@@ -3,6 +3,7 @@ import sys
 from uuid import uuid4
 import threading
 from collections import namedtuple
+import platform
 
 Task = namedtuple('Task', ['cmd', 'cwd', 'conda_env'])
 
@@ -19,13 +20,19 @@ def execute_task(task):
     cmd = ''
 
     if task.conda_env is not None and len(task.conda_env) != 0:
-        cmd += 'conda activate ' + str(task.conda_env) + ';'
-
+        if platform.system() == "Windows":
+            cmd += 'conda activate ' + str(task.conda_env) + "&&"
+        else:
+            cmd += 'conda activate ' + str(task.conda_env) + ';'
     if task.cwd is not None and len(task.cwd) != 0:
-        cmd += 'cd ' + str(task.cwd) + ';'
-
+        if platform.system() == "Windows":
+            cmd += 'cd /D ' + str(task.cwd) + "&&"
+        else:
+            cmd += 'cd ' + str(task.cwd) + ';'
     cmd += task.cmd
 
+
+    print(cmd)
     t = threading.Thread(target=lambda cmd:os.system(cmd), args=(cmd, ))
     t.start()
     t.join()
