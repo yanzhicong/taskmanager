@@ -6,6 +6,7 @@ from datetime import datetime
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--input_file', type=str, default='task.txt')
+parser.add_argument('-g', '--gpu', type=str, default=None)
 args = parser.parse_args()
 
 
@@ -22,7 +23,7 @@ def cal_task(cmd_str):
         task = Task(cmd=splits[0], cwd=splits[1], conda_env=splits[2])
 
 
-    task_id = execute_task(task)
+    task_id = execute_task(task, gpu=args.gpu)
     wait_task(task_id)
 
 while True:
@@ -58,6 +59,7 @@ while True:
 
         if not find_task:
             time.sleep(10)
+
 
     except KeyboardInterrupt:
         print('exit')

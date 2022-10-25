@@ -12,23 +12,29 @@ task_dict = {}
 thread_dict = {}
 
 
-def execute_task(task):
+def execute_task(task, gpu=None):
     task_id = uuid4()
 
     task_dict[task_id] = task
 
     cmd = ''
 
-    if task.conda_env is not None and len(task.conda_env) != 0:
-        if platform.system() == "Windows":
-            cmd += 'conda activate ' + str(task.conda_env) + "&&"
-        else:
-            cmd += 'conda activate ' + str(task.conda_env) + ';'
+
     if task.cwd is not None and len(task.cwd) != 0:
         if platform.system() == "Windows":
             cmd += 'cd /D ' + str(task.cwd) + "&&"
         else:
             cmd += 'cd ' + str(task.cwd) + ';'
+
+    if gpu is not None:
+        cmd += 'CUDA_VISIBLE_DEVICES={} '.format(gpu)
+
+    if task.conda_env is not None and len(task.conda_env) != 0:
+        if platform.system() == "Windows":
+            cmd += 'conda run --no-capture-output -n ' + str(task.conda_env) + " "
+        else:
+            cmd += 'conda run --no-capture-output -n ' + str(task.conda_env) + " "
+
     cmd += task.cmd
 
 
@@ -39,6 +45,8 @@ def execute_task(task):
     thread_dict[task_id] = t
 
     return task_id
+
+
 
 
 def get_task_state(task_id):
